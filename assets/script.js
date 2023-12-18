@@ -1,41 +1,8 @@
-// TODO
-// 1. When user search for a city in the input, call weather API and show the result in the HTML
-//    - Add event listener to form submit
-//    - Get the user input value
-//    - Build the API query URL based on the user input value
-//    - Call the API and render the result in the HTML
-//        - Get the city name and show it in the main weather forecast card
-//        - Get the first weather forecast item and get the following values
-//            - date
-//            - temperature
-//            - wind speed
-//            - humidity
-//            - icon
-//        - render those values to the main card
-//        - Loop through all weathers array and get the following values
-//            - date
-//            - temperature
-//            - wind speed
-//            - humidity
-//            - icon
-//        - render those values to the smaller card
-// 2. When user search for a city, store it in local storage
-// 3. On initial page load load the search history and show it as a list in the HTML
-//    - ....
-//    - Build the API query URL based on the history stored in local storage
-//    - Call the API and render the result in the HTML
-// 4. When user click on the search history, call weather API and show the result in the HTML
-// 5. CSS
-
-
-
-
-//event listener to form submit
-let searchLogic = function(){
-$('#search-form').on('submit', function(event){
-event.preventDefault();
 let cityName = $('#search-input').val().trim();
+displaySearchHistory()
+
 //fetch to get coordinates from city name
+let fetchAndDisplay = function(cityName){
 fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=1a06838aa0ec5de32fa5b9b5de0234e2&units=metric')
     .then(function(response) {
         if (!response.ok) {
@@ -69,9 +36,28 @@ fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=
         console.error('There has been a problem with your fetch operation:', error);
     });
     
-});
 };
-searchLogic()
+
+
+//Search submit event handler and clear input
+let searchSubmit = function() {
+    $('#search-form').on('submit', function(event) {
+        event.preventDefault();
+        let cityName = $('#search-input').val().trim();
+        fetchAndDisplay(cityName);
+        $('#search-input').val("");
+    });
+};
+// History button click and clear input
+$('#history').on('click', '.history-item', function() {
+    let cityName = $(this).text();
+    console.log("History button clicked:", cityName); 
+    fetchAndDisplay(cityName);
+});
+
+
+
+//Current weather display (main display)==> Edited to include 5 day forcast cards
 let displayWeather = function(forecastData){
     let weatherIcon = forecastData.list[0].weather[0].icon;
     let nameDisplay = $('<h2>').text(forecastData.city.name);
@@ -84,9 +70,56 @@ let displayWeather = function(forecastData){
     let currentWeatherContainer = $('#today');
     currentWeatherContainer.empty()
     currentWeatherContainer.append(nameDisplay, iconDisplay, dateAndTime, tempDisplay, humidityDisplay, windSpeedDisplay);
+
+    let dailyForecasts = process5DayForecast(forecastData);
+    let forecastContainer = $('#forecast'); 
+    forecastContainer.empty();
+
+    dailyForecasts.forEach(day => {
+        let dayCard = createForecastCard(day); 
+        forecastContainer.append(dayCard)
+    })
+}
+//1 card per day for 5 day forecast logic
+function process5DayForecast(forecastData) {
+    let dailyForecasts = [];
+
+    for (let i = 0; i < forecastData.list.length; i += 8) {
+        dailyForecasts.push(forecastData.list[i]);
+    }
+
+    return dailyForecasts;
+};
+
+function createForecastCard(dayForecast) {
+    let card = $('<div>').addClass('forecast-card')
+
+    // Date
+    let date = new Date(dayForecast.dt * 1000);
+    let dateString = dayjs(date).format('dddd, MMM D'); 
+    let dateElem = $('<p>').addClass('.card-body').text(dateString);
+
+    // Temperature
+    let temp = dayForecast.main.temp.toFixed(1);
+    let tempElem = $('<p>').addClass('.card-body').text(`Temp: ${temp} °C`);
+
+    let humidity = dayForecast.main.humidity;
+    let humidElem = $('<p>').addClass('.card-body').text('Humidity: ' + humidity);
+
+    // Weather Icon
+    let iconCode = dayForecast.weather[0].icon;
+    let iconUrl = 'https://openweathermap.org/img/w/' + iconCode + '.png';
+    let iconElem = $('<img>').addClass('.card-body').attr('src', iconUrl);
+
+    // Append all elements to the card
+    card.append(dateElem, iconElem, tempElem, humidElem);
+
+    return card; // Return the card
 }
 
 
+
+//Add searches to history
 function addToSearchHistory(cityName) {
     let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
     if (!searchHistory.includes(cityName)) {
@@ -96,14 +129,33 @@ function addToSearchHistory(cityName) {
     displaySearchHistory();
 }
 
+
+//display searched cities
 function displaySearchHistory() {
     let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
     let historyContainer = $('#history');
     historyContainer.empty();
 
-    searchHistory.forEach(city => {
-        let historyItem = $('<button>').text(city).addClass('history-item');
-        historyContainer.append(historyItem);
-    });
+    if (searchHistory.length === 0) {
+        historyContainer.append($('<p>').text('No cities searched'));
+    } else {
+        searchHistory.forEach(city => {
+            let historyItem = $('<button>').text(city).addClass('history-item');
+            historyContainer.append(historyItem);
+        });
+    }
 }
-displaySearchHistory()
+;
+//clear history button (originally from debugging)
+
+    $('#clear-history').on('click', function() {
+        localStorage.removeItem('searchHistory'); 
+        displaySearchHistory(); 
+    });
+;
+
+searchSubmit()
+
+
+
+
