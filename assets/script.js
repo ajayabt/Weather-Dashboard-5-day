@@ -28,8 +28,18 @@
 // 5. CSS
 
 
-let cityName = 'London'; // Replace this with actual user input
 
+
+
+
+let searchBarCity = $('#search-form').val();
+
+
+
+
+$('#search-form').on('submit', function(event){
+event.preventDefault();
+let cityName = $('#search-input').val();
 //fetch to get coordinates from city name
 fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=1a06838aa0ec5de32fa5b9b5de0234e2&units=metric')
     .then(function(response) {
@@ -61,7 +71,7 @@ fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=
     .catch(function(error) {
         console.error('There has been a problem with your fetch operation:', error);
     });
-
+})
 
 
     
