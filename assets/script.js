@@ -34,7 +34,7 @@
 let searchLogic = function(){
 $('#search-form').on('submit', function(event){
 event.preventDefault();
-let cityName = $('#search-input').val();
+let cityName = $('#search-input').val().trim();
 //fetch to get coordinates from city name
 fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=1a06838aa0ec5de32fa5b9b5de0234e2&units=metric')
     .then(function(response) {
@@ -63,6 +63,7 @@ fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=
     .then(function(forecastData) {
         console.log("Forecast Data:", forecastData);
         displayWeather(forecastData);
+        addToSearchHistory(cityName);
     })
     .catch(function(error) {
         console.error('There has been a problem with your fetch operation:', error);
@@ -75,15 +76,34 @@ let displayWeather = function(forecastData){
     let weatherIcon = forecastData.list[0].weather[0].icon;
     let nameDisplay = $('<h2>').text(forecastData.city.name);
     let iconDisplay = $('<img>').attr('src', 'https://openweathermap.org/img/w/' + weatherIcon + '.png');
-    let dateAndTime = $('<h2>').text('The time is ' + forecastData.list[0].dt_txt);
-    let tempDisplay = $('<h2>').text('The current temperature is ' + forecastData.list[0].main.temp);
-    let humidityDisplay = $('<h2>').text('The current humidity is ' + forecastData.list[0].main.humidity);
-    let windSpeedDisplay = $('<h2>').text('The current wind speed is ' + forecastData.list[0].wind.speed);
+    let dateAndTime = $('<h2>').text('Today\'s date: ' + dayjs().format('DD-MM-YYYY'));
+    let tempDisplay = $('<h2>').text('The current temperature is ' + forecastData.list[0].main.temp.toFixed(1));
+    let humidityDisplay = $('<h2>').text('The current humidity is ' + forecastData.list[0].main.humidity.toFixed(1));
+    let windSpeedDisplay = $('<h2>').text('The current wind speed is ' + forecastData.list[0].wind.speed.toFixed(1));
 
     let currentWeatherContainer = $('#today');
+    currentWeatherContainer.empty()
     currentWeatherContainer.append(nameDisplay, iconDisplay, dateAndTime, tempDisplay, humidityDisplay, windSpeedDisplay);
 }
 
 
+function addToSearchHistory(cityName) {
+    let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    if (!searchHistory.includes(cityName)) {
+        searchHistory.push(cityName);
+        localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+    }
+    displaySearchHistory();
+}
 
-    
+function displaySearchHistory() {
+    let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    let historyContainer = $('#history');
+    historyContainer.empty();
+
+    searchHistory.forEach(city => {
+        let historyItem = $('<button>').text(city).addClass('history-item');
+        historyContainer.append(historyItem);
+    });
+}
+displaySearchHistory()
