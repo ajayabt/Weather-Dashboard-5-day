@@ -30,13 +30,8 @@
 
 
 
-
-
-let searchBarCity = $('#search-form').val();
-
-
-
-
+//event listener to form submit
+let searchLogic = function(){
 $('#search-form').on('submit', function(event){
 event.preventDefault();
 let cityName = $('#search-input').val();
@@ -67,12 +62,28 @@ fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&appid=
     })
     .then(function(forecastData) {
         console.log("Forecast Data:", forecastData);
+        displayWeather(forecastData);
     })
     .catch(function(error) {
         console.error('There has been a problem with your fetch operation:', error);
     });
-})
-
-
     
+});
+};
+searchLogic()
+let displayWeather = function(forecastData){
+    let weatherIcon = forecastData.list[0].weather[0].icon;
+    let nameDisplay = $('<h2>').text(forecastData.city.name);
+    let iconDisplay = $('<img>').attr('src', 'https://openweathermap.org/img/w/' + weatherIcon + '.png');
+    let dateAndTime = $('<h2>').text('The time is ' + forecastData.list[0].dt_txt);
+    let tempDisplay = $('<h2>').text('The current temperature is ' + forecastData.list[0].main.temp);
+    let humidityDisplay = $('<h2>').text('The current humidity is ' + forecastData.list[0].main.humidity);
+    let windSpeedDisplay = $('<h2>').text('The current wind speed is ' + forecastData.list[0].wind.speed);
+
+    let currentWeatherContainer = $('#today');
+    currentWeatherContainer.append(nameDisplay, iconDisplay, dateAndTime, tempDisplay, humidityDisplay, windSpeedDisplay);
+}
+
+
+
     
