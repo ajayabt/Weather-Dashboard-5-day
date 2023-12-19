@@ -61,11 +61,11 @@ $('#history').on('click', '.history-item', function() {
 let displayWeather = function(forecastData){
     let weatherIcon = forecastData.list[0].weather[0].icon;
     let nameDisplay = $('<h2>').text(forecastData.city.name);
-    let iconDisplay = $('<img>').attr('src', 'https://openweathermap.org/img/w/' + weatherIcon + '.png');
+    let iconDisplay = $('<img>').attr('src', 'https://openweathermap.org/img/w/' + weatherIcon + '.png')
     let dateAndTime = $('<h2>').text('Today\'s date: ' + dayjs().format('DD-MM-YYYY'));
-    let tempDisplay = $('<h2>').text('The current temperature is ' + forecastData.list[0].main.temp.toFixed(1));
-    let humidityDisplay = $('<h2>').text('The current humidity is ' + forecastData.list[0].main.humidity.toFixed(1));
-    let windSpeedDisplay = $('<h2>').text('The current wind speed is ' + forecastData.list[0].wind.speed.toFixed(1));
+    let tempDisplay = $('<h2>').text('The current temperature is: ' + forecastData.list[0].main.temp.toFixed(1) + ' \u00B0C');
+    let humidityDisplay = $('<h2>').text('The current humidity is: ' + forecastData.list[0].main.humidity.toFixed(1));
+    let windSpeedDisplay = $('<h2>').text('The current wind speed is: ' + forecastData.list[0].wind.speed.toFixed(1) +' mph');
 
     let currentWeatherContainer = $('#today');
     currentWeatherContainer.empty()
@@ -92,29 +92,21 @@ function process5DayForecast(forecastData) {
 };
 
 function createForecastCard(dayForecast) {
-    let card = $('<div>').addClass('forecast-card')
-
-    // Date
+    let card = $('<div>').addClass('card bg-primary text-center col-lg-2 border-rounded').css({'margin':'auto'})
     let date = new Date(dayForecast.dt * 1000);
     let dateString = dayjs(date).format('dddd, MMM D'); 
-    let dateElem = $('<p>').addClass('.card-body').text(dateString);
-
-    // Temperature
+    let dateElem = $('<p>').text(dateString).addClass('card-header');
     let temp = dayForecast.main.temp.toFixed(1);
-    let tempElem = $('<p>').addClass('.card-body').text(`Temp: ${temp} °C`);
-
+    let tempElem = $('<p>').text(`Temp: ${temp} °C`).addClass('card-body')
     let humidity = dayForecast.main.humidity;
-    let humidElem = $('<p>').addClass('.card-body').text('Humidity: ' + humidity);
-
-    // Weather Icon
+    let humidElem = $('<p>').text('Humidity: ' + humidity).addClass('card-title');
     let iconCode = dayForecast.weather[0].icon;
     let iconUrl = 'https://openweathermap.org/img/w/' + iconCode + '.png';
-    let iconElem = $('<img>').addClass('.card-body').attr('src', iconUrl);
+    let iconElem = $('<img>').addClass('card-img-top').attr('src', iconUrl).css({ 'width': '50px', 'height': '50px', 'margin': 'auto'});
 
-    // Append all elements to the card
     card.append(dateElem, iconElem, tempElem, humidElem);
 
-    return card; // Return the card
+    return card; 
 }
 
 
